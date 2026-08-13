@@ -19,25 +19,10 @@ import { renderRefsPage } from './pages/refs.js';
 import { renderSettingsPage } from './pages/settings.js';
 import { confirmBox } from './ui/modal.js';
 import { toast } from './ui/toast.js';
-import { initAuth } from './services/auth.js';
 
 export async function initApp() {
   const S = state.raw();
   const autoSave = createScheduleAutoFile(S);
-
-  // Initialize auth
-  initAuth(
-    (user) => {
-      S.user = user;
-      S.needsAuth = false;
-      bus.emit('auth:change');
-    },
-    () => {
-      S.user = null;
-      S.needsAuth = true;
-      bus.emit('auth:change');
-    }
-  );
 
   // 1. Initialize Meta & DB
   try {
@@ -189,10 +174,6 @@ export async function initApp() {
   // Refresh view on state changes
   bus.on('state:change', () => {
     updateCounts(S);
-  });
-  
-  bus.on('auth:change', () => {
-    if (S.page === 'settings') renderCurrentPage();
   });
 
   // Start router

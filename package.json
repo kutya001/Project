@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "dexie": "^4.4.4",
-    "express": "^4.21.2",
-    "firebase": "^12.17.1"
+    "express": "^4.21.2"
   }
 }
