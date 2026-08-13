@@ -19,24 +19,41 @@ import { renderRefsPage } from './pages/refs.js';
 import { renderSettingsPage } from './pages/settings.js';
 import { confirmBox } from './ui/modal.js';
 import { toast } from './ui/toast.js';
+import { initAuth } from './services/auth.js';
 
 export async function initApp() {
   const S = state.raw();
   const autoSave = createScheduleAutoFile(S);
 
+  // Initialize auth
+  initAuth(
+    (user) => {
+      S.user = user;
+      S.needsAuth = false;
+      bus.emit('auth:change');
+    },
+    () => {
+      S.user = null;
+      S.needsAuth = true;
+      bus.emit('auth:change');
+    }
+  );
+
   // 1. Initialize Meta & DB
   try {
-    const [pRec, cRec, lsRec, leRec] = await Promise.all([
+    const [pRec, cRec, lsRec, leRec, fhRec] = await Promise.all([
       db.meta.get('prefs'),
       db.meta.get('counters'),
       db.meta.get('lastSaved'),
-      db.meta.get('lastExport')
+      db.meta.get('lastExport'),
+      db.meta.get('fileHandle')
     ]);
 
     if (pRec && pRec.value) S.prefs = Object.assign(S.prefs, pRec.value);
     if (cRec && cRec.value) S.counters = cRec.value;
     if (lsRec && lsRec.value) S.lastSaved = lsRec.value;
     if (leRec && leRec.value) S.lastExport = leRec.value;
+    if (fhRec && fhRec.value) S.fileHandle = fhRec.value;
 
     await refreshAll(S);
 
@@ -172,6 +189,10 @@ export async function initApp() {
   // Refresh view on state changes
   bus.on('state:change', () => {
     updateCounts(S);
+  });
+  
+  bus.on('auth:change', () => {
+    if (S.page === 'settings') renderCurrentPage();
   });
 
   // Start router

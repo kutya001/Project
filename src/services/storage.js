@@ -106,11 +106,16 @@ export async function doImport(S, file, onComplete) {
 export async function autoSaveNow(S) {
   if (!S.fileHandle) return;
   try {
+    const perm = await S.fileHandle.queryPermission({ mode: 'readwrite' });
+    if (perm !== 'granted') {
+      console.warn('Auto-save skipped: Write permission not granted (requires user interaction in Settings).');
+      return;
+    }
     const w = await S.fileHandle.createWritable();
     await w.write(JSON.stringify(buildSnapshot(S), null, 2));
     await w.close();
   } catch (e) {
-    toast('Ошибка авто-сохранения в файл', 'err');
+    console.error('Ошибка авто-сохранения в файл:', e);
   }
 }
 
