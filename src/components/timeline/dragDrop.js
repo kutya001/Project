@@ -4,6 +4,9 @@ import { fmtD, addDays, diffDays, nowIso } from '../../utils/date.js';
 import { db, refreshAll } from '../../core/db.js';
 import { setDbBeacon, afterChange } from '../../utils/logger.js';
 import { toast } from '../../ui/toast.js';
+import { getColDefs } from '../table/colDefs.js';
+import { matchSearch } from '../table/filters.js';
+import { savePrefs } from '../../core/prefs.js';
 
 export function setupTimelineDragDrop(S, ent, mount, reRender, rowMeta, groupBy, ppd, callbacks = {}, wsT = 0) {
   const body = mount.querySelector('#tlBody');
@@ -15,6 +18,12 @@ export function setupTimelineDragDrop(S, ent, mount, reRender, rowMeta, groupBy,
     if (!bar) return;
     if (e.button && e.button !== 0) return; // Only LMB drags
     e.preventDefault();
+
+    const canvas = bar.closest('.tl-canvas');
+    const gi = canvas ? +canvas.dataset.gi : 0;
+    const origTop = parseFloat(bar.style.top) || 6;
+    const origLane = Math.max(0, Math.round((origTop - 6) / 26));
+
     drag = {
       bar,
       id: +bar.dataset.id,
@@ -25,10 +34,14 @@ export function setupTimelineDragDrop(S, ent, mount, reRender, rowMeta, groupBy,
       h: e.target.dataset.h || null,
       origLeft: parseFloat(bar.style.left) || 0,
       origW: parseFloat(bar.style.width) || 8,
-      origTop: parseFloat(bar.style.top) || 6,
+      origTop,
+      origLane,
       moved: false,
       dx: 0,
-      gi: +bar.closest('.tl-canvas').dataset.gi
+      dy: 0,
+      gi,
+      tgt: gi,
+      targetLane: origLane
     };
     bar.setPointerCapture(e.pointerId);
   });
@@ -40,6 +53,7 @@ export function setupTimelineDragDrop(S, ent, mount, reRender, rowMeta, groupBy,
     drag.moved = true;
     drag.bar.classList.add('dragging');
     drag.dx = dx;
+    drag.dy = dy;
 
     const dd = Math.round(dx / ppd);
     let ns = drag.s, ne = drag.en;
@@ -59,8 +73,8 @@ export function setupTimelineDragDrop(S, ent, mount, reRender, rowMeta, groupBy,
       drag.bar.style.width = newW + 'px';
       ns = addDays(drag.s, Math.min(dd, diffDays(drag.s, drag.en) - 1));
     } else {
-      // Dragging entire bar
-      drag.bar.style.transform = `translate(${dx}px, 0)`;
+      // Dragging entire bar in 2D
+      drag.bar.style.transform = `translate(${dx}px, ${dy}px)`;
       ns = addDays(drag.s, dd);
       ne = addDays(drag.en, dd);
     }
@@ -83,7 +97,18 @@ export function setupTimelineDragDrop(S, ent, mount, reRender, rowMeta, groupBy,
       if (canvas) canvas.style.outline = i === tgt && i !== drag.gi ? '2px dashed var(--acc)' : '';
     });
 
-    // Ghost element preview (Призрак местоположения)
+    const targetRowEl = rows[tgt];
+    const targetCanvas = targetRowEl?.querySelector('.tl-canvas');
+    let targetLane = 0;
+
+    if (targetCanvas) {
+      const canvasRect = targetCanvas.getBoundingClientRect();
+      const relativeY = e.clientY - canvasRect.top;
+      targetLane = Math.max(0, Math.floor((relativeY - 2) / 26));
+    }
+    drag.targetLane = targetLane;
+
+    // Ghost element preview
     let ghost = document.getElementById('tlGhost');
     if (!ghost) {
       ghost = document.createElement('div');
@@ -91,7 +116,6 @@ export function setupTimelineDragDrop(S, ent, mount, reRender, rowMeta, groupBy,
       ghost.className = 'bar-ghost';
     }
 
-    const targetCanvas = rows[tgt]?.querySelector('.tl-canvas');
     if (targetCanvas) {
       if (ghost.parentElement !== targetCanvas) {
         targetCanvas.appendChild(ghost);
@@ -100,8 +124,8 @@ export function setupTimelineDragDrop(S, ent, mount, reRender, rowMeta, groupBy,
       const ghostW = Math.max(8, Math.round(diffDays(ns, ne) * ppd) - 2);
       ghost.style.left = ghostX + 'px';
       ghost.style.width = ghostW + 'px';
-      ghost.style.top = drag.origTop + 'px';
-      ghost.textContent = `${fmtD(ns)} → ${fmtD(ne)} (${diffDays(ns, ne)} дн.)`;
+      ghost.style.top = (6 + targetLane * 26) + 'px';
+      ghost.textContent = `${fmtD(ns)} → ${fmtD(ne)} (${diffDays(ns, ne)} дн.) · Строка ${targetLane + 1}`;
     }
 
     const tip = $('#tlTip');
@@ -110,7 +134,7 @@ export function setupTimelineDragDrop(S, ent, mount, reRender, rowMeta, groupBy,
       tip.style.left = (e.clientX + 14) + 'px';
       tip.style.top = (e.clientY + 18) + 'px';
       const gtxt = (tgt !== drag.gi && ['dev', 'agent', 'priority', 'stage', 'status'].includes(groupBy) && rowMeta[tgt]) ? ` → ${esc(rowMeta[tgt].g.name)}` : '';
-      tip.textContent = `${fmtD(ns)} → ${fmtD(ne)} (${diffDays(ns, ne)} дн.)${gtxt}`;
+      tip.textContent = `${fmtD(ns)} → ${fmtD(ne)} (${diffDays(ns, ne)} дн.)${gtxt} · Строка ${targetLane + 1}`;
     }
   });
 
@@ -145,13 +169,49 @@ export function setupTimelineDragDrop(S, ent, mount, reRender, rowMeta, groupBy,
     r.end = d.ne || r.end;
     r.updatedAt = nowIso();
 
-    if (d.tgt !== undefined && d.tgt !== d.gi && rowMeta[d.tgt]) {
-      const g = rowMeta[d.tgt].g;
-      if (groupBy === 'dev') r.devId = g.id;
-      else if (groupBy === 'agent') r.agentId = g.id;
-      else if (groupBy === 'priority') r.priorityId = g.id;
-      else if (groupBy === 'stage') r.stageId = g.id;
-      else r.statusId = g.id;
+    const tgtG = rowMeta[d.tgt]?.g;
+    const srcG = rowMeta[d.gi]?.g;
+
+    if (d.tgt !== undefined && d.tgt !== d.gi && tgtG) {
+      if (groupBy === 'dev') r.devId = tgtG.id;
+      else if (groupBy === 'agent') r.agentId = tgtG.id;
+      else if (groupBy === 'priority') r.priorityId = tgtG.id;
+      else if (groupBy === 'stage') r.stageId = tgtG.id;
+      else r.statusId = tgtG.id;
+    }
+
+    // Update item vertical ordering inside S.prefs.tlItemOrder
+    if (tgtG) {
+      const tgtGidStr = String(tgtG.id ?? '__null');
+      const tgtItemOrderKey = `${ent}_${groupBy}_${tgtGidStr}`;
+      S.prefs.tlItemOrder = S.prefs.tlItemOrder || {};
+
+      const coldefs = getColDefs(S);
+      const rawTargetItems = S[ent].filter(it => tgtG.match(it) && matchSearch(S, coldefs, ent, it));
+
+      let currentOrder = S.prefs.tlItemOrder[tgtItemOrderKey] ? [...S.prefs.tlItemOrder[tgtItemOrderKey]] : [];
+      currentOrder = currentOrder.filter(itemId => itemId !== r.id && rawTargetItems.some(it => it.id === itemId));
+
+      rawTargetItems.forEach(it => {
+        if (it.id !== r.id && !currentOrder.includes(it.id)) {
+          currentOrder.push(it.id);
+        }
+      });
+
+      const insertIdx = Math.max(0, Math.min(currentOrder.length, d.targetLane));
+      currentOrder.splice(insertIdx, 0, r.id);
+
+      S.prefs.tlItemOrder[tgtItemOrderKey] = currentOrder;
+
+      if (d.gi !== d.tgt && srcG) {
+        const srcGidStr = String(srcG.id ?? '__null');
+        const srcItemOrderKey = `${ent}_${groupBy}_${srcGidStr}`;
+        if (S.prefs.tlItemOrder[srcItemOrderKey]) {
+          S.prefs.tlItemOrder[srcItemOrderKey] = S.prefs.tlItemOrder[srcItemOrderKey].filter(itemId => itemId !== r.id);
+        }
+      }
+
+      await savePrefs(S);
     }
 
     try {
@@ -169,3 +229,4 @@ export function setupTimelineDragDrop(S, ent, mount, reRender, rowMeta, groupBy,
   body.addEventListener('pointerup', endDrag);
   body.addEventListener('pointercancel', endDrag);
 }
+

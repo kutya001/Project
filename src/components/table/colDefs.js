@@ -8,17 +8,18 @@ export function getColDefs(S) {
     projects: [
       col('num', '№', 'text', { w: 74 }),
       col('name', 'Название', 'text'),
+      col('customerId', 'Заказчик', 'select', { dir: () => S.customers || [] }),
       col('statusId', 'Статус', 'select', { dir: () => S.projectStatuses }),
       col('priorityId', 'Приоритет', 'select', { dir: () => S.priorities }),
       col('stageId', 'Этап', 'select', { dir: () => S.stages }),
       col('devId', 'Разработчик (гл.)', 'select', { dir: () => S.employees.filter(e => e.role === 'dev') }),
-      col('agentId', 'Агент (гл.)', 'select', { dir: () => S.employees.filter(e => e.role === 'agent') }),
+      col('agentId', 'Агент (ПМ / Аналитик)', 'select', { dir: () => S.employees.filter(e => e.role === 'agent') }),
       col('progress', 'Этапы %', 'custom'),
       col('start', 'Начало', 'date'),
       col('end', 'Конец', 'date'),
       col('tasksCount', 'Задач', 'number'),
-      col('agents', 'Агенты', 'multi', { role: 'agent' }),
-      col('devs', 'Разработчики', 'multi', { role: 'dev' }),
+      col('agents', 'Агенты (участ.)', 'multi', { role: 'agent' }),
+      col('devs', 'Разработчики (участ.)', 'multi', { role: 'dev' }),
       col('desc', 'Описание', 'text'),
       col('note', 'Примечание', 'text'),
       col('createdAt', 'Создан', 'date'),
@@ -28,10 +29,11 @@ export function getColDefs(S) {
       col('num', '№', 'text', { w: 74 }),
       col('name', 'Название', 'text'),
       col('projectId', 'Проект', 'select', { dir: () => S.projects }),
+      col('customerId', 'Заказчик', 'select', { dir: () => S.customers || [] }),
       col('statusId', 'Статус', 'select', { dir: () => S.taskStatuses }),
       col('priorityId', 'Приоритет', 'select', { dir: () => S.priorities }),
       col('devId', 'Разработчик (гл.)', 'select', { dir: () => S.employees.filter(e => e.role === 'dev') }),
-      col('agentId', 'Агент (гл.)', 'select', { dir: () => S.employees.filter(e => e.role === 'agent') }),
+      col('agentId', 'Агент (ПМ / Аналитик)', 'select', { dir: () => S.employees.filter(e => e.role === 'agent') }),
       col('extNum', '№ в системе', 'text'),
       col('extLink', 'Ссылка', 'link'),
       col('start', 'Начало', 'date'),
@@ -48,10 +50,11 @@ export function getColDefs(S) {
       col('num', '№', 'text', { w: 74 }),
       col('name', 'Название', 'text'),
       col('taskId', 'Задача', 'select', { dir: () => S.tasks }),
+      col('customerId', 'Заказчик', 'select', { dir: () => S.customers || [] }),
       col('statusId', 'Статус', 'select', { dir: () => S.taskStatuses }),
       col('priorityId', 'Приоритет', 'select', { dir: () => S.priorities }),
       col('devId', 'Разработчик (гл.)', 'select', { dir: () => S.employees.filter(e => e.role === 'dev') }),
-      col('agentId', 'Агент (гл.)', 'select', { dir: () => S.employees.filter(e => e.role === 'agent') }),
+      col('agentId', 'Агент (ПМ / Аналитик)', 'select', { dir: () => S.employees.filter(e => e.role === 'agent') }),
       col('extNum', '№ в системе', 'text'),
       col('extLink', 'Ссылка', 'link'),
       col('start', 'Начало', 'date'),
@@ -61,32 +64,48 @@ export function getColDefs(S) {
       col('createdAt', 'Создано', 'date'),
       col('updatedAt', 'Изменено', 'date')
     ],
+    customers: [
+      col('name', 'Название заказчика', 'text'),
+      col('contacts', 'Контактные данные', 'text'),
+      col('desc', 'Описание', 'text'),
+      col('note', 'Примечание', 'text')
+    ],
     employees: [
       col('color', 'Цвет', 'color', { w: 80 }),
       col('name', 'ФИО / Название', 'text'),
       col('role', 'Роль', 'role'),
-      col('position', 'Должность / Компания', 'text'),
+      col('position', 'Должность / Специализация', 'text'),
+      col('desc', 'Описание', 'text'),
+      col('note', 'Примечание', 'text'),
       col('active', 'Статус', 'active')
     ],
     priorities: [
       col('color', 'Цвет', 'color', { w: 80 }),
       col('name', 'Название', 'text'),
-      col('weight', 'Вес (1=высший)', 'number')
+      col('weight', 'Вес (1=высший)', 'number'),
+      col('desc', 'Описание', 'text'),
+      col('note', 'Примечание', 'text')
     ],
     taskStatuses: [
       col('color', 'Цвет', 'color', { w: 80 }),
       col('name', 'Название', 'text'),
-      col('order', 'Порядок', 'number')
+      col('order', 'Порядок', 'number'),
+      col('desc', 'Описание', 'text'),
+      col('note', 'Примечание', 'text')
     ],
     projectStatuses: [
       col('color', 'Цвет', 'color', { w: 80 }),
       col('name', 'Название', 'text'),
-      col('order', 'Порядок', 'number')
+      col('order', 'Порядок', 'number'),
+      col('desc', 'Описание', 'text'),
+      col('note', 'Примечание', 'text')
     ],
     stages: [
       col('color', 'Цвет', 'color', { w: 80 }),
       col('name', 'Название', 'text'),
-      col('order', 'Порядок', 'number')
+      col('order', 'Порядок', 'number'),
+      col('desc', 'Описание', 'text'),
+      col('note', 'Примечание', 'text')
     ]
   };
 }

@@ -4,6 +4,83 @@
   height: 100vh;
   position: relative;
   z-index: 1;
+  transition: grid-template-columns 0.22s ease;
+}
+
+#app.collapsed-side {
+  grid-template-columns: 64px 1fr;
+}
+
+.logo-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.side-collapse-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #9AA6B8;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: none;
+}
+
+.side-collapse-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+.side-collapse-btn svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.22s ease;
+}
+
+#app.collapsed-side .side-collapse-btn svg {
+  transform: rotate(180deg);
+}
+
+#app.collapsed-side .logo-txt,
+#app.collapsed-side .logo .sub,
+#app.collapsed-side nav .nv .t,
+#app.collapsed-side .side-foot {
+  display: none !important;
+}
+
+#app.collapsed-side .logo {
+  padding: 18px 10px 14px;
+}
+
+#app.collapsed-side .logo-head {
+  justify-content: center;
+  gap: 6px;
+}
+
+#app.collapsed-side nav .nv {
+  padding: 12px 0;
+  justify-content: center;
+  gap: 0;
+}
+
+#app.collapsed-side nav .nv .cnt {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 8px;
+  padding: 1px 4px;
+  border-radius: 8px;
+  margin-left: 0;
+  line-height: 1;
+}
+
+#app.collapsed-side nav .nv.on::before {
+  left: 0;
 }
 
 #side {

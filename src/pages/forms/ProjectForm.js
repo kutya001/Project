@@ -13,7 +13,7 @@ export function openProjectForm(S, id, onSave) {
     statusId: S.projectStatuses[0]?.id || null,
     priorityId: S.priorities[0]?.id || null,
     stageId: S.stages[0]?.id || null,
-    devId: null, agentId: null,
+    devId: null, agentId: null, customerId: null,
     start: '', end: '',
     stageProgress: {}, agents: [], devs: []
   };
@@ -21,6 +21,7 @@ export function openProjectForm(S, id, onSave) {
   const isEdit = !!p.id;
   const devsList = S.employees.filter(e => e.role === 'dev') || [];
   const agentsList = S.employees.filter(e => e.role === 'agent') || [];
+  const custsList = S.customers || [];
 
   const mcheck = (role, sel) => (S.employees.filter(e => e.role === role) || []).map(e => `
     <label><input type="checkbox" name="${role}s" value="${e.id}" ${(sel || []).includes(e.id) ? 'checked' : ''}>${esc(e.name)}</label>
@@ -30,14 +31,15 @@ export function openProjectForm(S, id, onSave) {
     <div><label class="fl">Код / Номер</label><input type="text" name="num" value="${esc(p.num)}" required></div>
     <div><label class="fl">Статус</label><select name="statusId">${S.projectStatuses.map(s => `<option value="${s.id}" ${s.id === p.statusId ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></div>
     <div class="full"><label class="fl">Название проекта</label><input type="text" name="name" value="${esc(p.name)}" required></div>
+    <div><label class="fl">Заказчик</label><select name="customerId"><option value="">— Выбрать заказчика —</option>${custsList.map(c => `<option value="${c.id}" ${c.id === p.customerId ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></div>
     <div><label class="fl">Приоритет</label><select name="priorityId">${S.priorities.map(s => `<option value="${s.id}" ${s.id === p.priorityId ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></div>
     <div><label class="fl">Текущий этап</label><select name="stageId"><option value="">— Не выбран —</option>${S.stages.map(s => `<option value="${s.id}" ${s.id === p.stageId ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></div>
     <div><label class="fl">Разработчик (гл.)</label><select name="devId"><option value="">— Не назначен —</option>${devsList.map(e => `<option value="${e.id}" ${e.id === p.devId ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}</select></div>
-    <div><label class="fl">Агент (гл.)</label><select name="agentId"><option value="">— Не назначен —</option>${agentsList.map(e => `<option value="${e.id}" ${e.id === p.agentId ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}</select></div>
+    <div class="full"><label class="fl">Ответственный агент (ПМ / Аналитик)</label><select name="agentId"><option value="">— Не назначен —</option>${agentsList.map(e => `<option value="${e.id}" ${e.id === p.agentId ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}</select></div>
     <div><label class="fl">Дата начала</label><input type="date" name="start" value="${p.start || ''}"></div>
     <div><label class="fl">Дата окончания</label><input type="date" name="end" value="${p.end || ''}"></div>
-    <div class="full"><label class="fl">Агенты (заказчики/подрядчики)</label><div class="mcheck">${mcheck('agent', p.agents)}</div></div>
-    <div class="full"><label class="fl">Разработчики (команда)</label><div class="mcheck">${mcheck('dev', p.devs)}</div></div>
+    <div class="full"><label class="fl">Агенты проекта (ПМ / Аналитики)</label><div class="mcheck">${mcheck('agent', p.agents)}</div></div>
+    <div class="full"><label class="fl">Разработчики проекта (команда)</label><div class="mcheck">${mcheck('dev', p.devs)}</div></div>
     <div class="full"><label class="fl">Прогресс по этапам (%)</label>
       <div class="stageed">${S.stages.map(st => {
         const val = p.stageProgress ? (p.stageProgress[st.id] || 0) : 0;
@@ -88,6 +90,7 @@ export function openProjectForm(S, id, onSave) {
         p.stageId = +fd.get('stageId') || null;
         p.devId = +fd.get('devId') || null;
         p.agentId = +fd.get('agentId') || null;
+        p.customerId = +fd.get('customerId') || null;
         p.start = fd.get('start') || '';
         p.end = fd.get('end') || '';
         p.agents = [...form.querySelectorAll('input[name="agents"]:checked')].map(i => +i.value);

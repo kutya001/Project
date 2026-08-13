@@ -6,6 +6,7 @@ const S = {
   tasks: [],
   changes: [],
   employees: [],
+  customers: [],
   priorities: [],
   taskStatuses: [],
   projectStatuses: [],
@@ -56,6 +57,7 @@ export const ENT = {
 
 export const REFTABS = [
   ['employees', 'Сотрудники'],
+  ['customers', 'Заказчики'],
   ['priorities', 'Приоритеты'],
   ['taskStatuses', 'Статусы задач/изменений'],
   ['projectStatuses', 'Статусы проектов'],
@@ -64,6 +66,7 @@ export const REFTABS = [
 
 export const REFNAME = {
   employees: 'Сотрудник',
+  customers: 'Заказчик',
   priorities: 'Приоритет',
   taskStatuses: 'Статус',
   projectStatuses: 'Статус проекта',

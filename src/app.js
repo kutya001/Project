@@ -111,6 +111,27 @@ export async function initApp() {
     else renderProjectsPage(S, pageMount, callbacks);
   }
 
+  // Sidebar Collapse logic
+  const appEl = $('#app');
+  const btnToggleSide = $('#btnToggleSide');
+
+  if (S.prefs?.collapsedSide && appEl) {
+    appEl.classList.add('collapsed-side');
+  }
+
+  if (btnToggleSide && appEl) {
+    btnToggleSide.onclick = async () => {
+      const isCollapsed = appEl.classList.toggle('collapsed-side');
+      if (!S.prefs) S.prefs = {};
+      S.prefs.collapsedSide = isCollapsed;
+      try {
+        await db.meta.put({ id: 'prefs', value: S.prefs });
+      } catch (err) {
+        console.error('Failed to save sidebar preference:', err);
+      }
+    };
+  }
+
   // Mobile Sidebar Menu logic
   const sideEl = $('#side');
   const overlayEl = $('#sideOverlay');

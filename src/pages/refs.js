@@ -127,7 +127,18 @@ function renderCardsView(S, curTab, mount, refCallbacks, reRender) {
     const col = colorOf(item);
     let detailsHtml = '';
 
-    if (curTab === 'employees') {
+    if (curTab === 'customers') {
+      const pCount = S.projects.filter(p => p.customerId === item.id).length;
+      const tCount = S.tasks.filter(t => t.customerId === item.id).length;
+      detailsHtml = `
+        <div style="font-size:12.5px;color:var(--ink);margin-bottom:4px"><b>Контакты:</b> ${esc(item.contacts || '—')}</div>
+        ${item.desc ? `<div style="font-size:12px;color:var(--mut);margin-bottom:4px">${esc(item.desc)}</div>` : ''}
+        <div style="display:flex;gap:12px;font-size:11.5px;color:var(--mut);margin-top:2px">
+          <span>${iconPrj} Проектов: <b>${pCount}</b></span>
+          <span>${iconTsk} Задач: <b>${tCount}</b></span>
+        </div>
+      `;
+    } else if (curTab === 'employees') {
       const roleName = roleText[item.role] || item.role || 'Сотрудник';
       const rColor = roleColor[item.role] || '#4A5568';
       const pCount = S.projects.filter(p => p.devId === item.id || p.agentId === item.id || (p.devs || []).includes(item.id) || (p.agents || []).includes(item.id)).length;

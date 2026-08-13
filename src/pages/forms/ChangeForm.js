@@ -15,12 +15,13 @@ export function openChangeForm(S, id, preset = {}, onSave) {
     name: '', desc: '', note: '',
     statusId: S.taskStatuses[0]?.id || null,
     priorityId: S.priorities[0]?.id || null,
-    devId: null, agentId: null,
+    devId: null, agentId: null, customerId: null,
     extNum: '', extLink: '',
     start: '', end: ''
   };
 
   const isEdit = !!c.id;
+  const custsList = S.customers || [];
   const body = `<form id="cf" class="fgrid">
     <div><label class="fl">Код / Номер</label><input type="text" name="num" value="${esc(c.num)}" required></div>
     <div>
@@ -31,10 +32,11 @@ export function openChangeForm(S, id, preset = {}, onSave) {
       </div>
     </div>
     <div class="full"><label class="fl">Название изменения</label><input type="text" name="name" value="${esc(c.name)}" required></div>
+    <div><label class="fl">Заказчик</label><select name="customerId"><option value="">— Выбрать заказчика —</option>${custsList.map(cust => `<option value="${cust.id}" ${cust.id === c.customerId ? 'selected' : ''}>${esc(cust.name)}</option>`).join('')}</select></div>
     <div><label class="fl">Статус</label><select name="statusId">${S.taskStatuses.map(s => `<option value="${s.id}" ${s.id === c.statusId ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></div>
     <div><label class="fl">Приоритет</label><select name="priorityId">${S.priorities.map(s => `<option value="${s.id}" ${s.id === c.priorityId ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></div>
     <div><label class="fl">Ответственный разработчик</label><select name="devId"><option value="">— Не назначен —</option>${S.employees.filter(e => e.role === 'dev').map(e => `<option value="${e.id}" ${e.id === c.devId ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}</select></div>
-    <div><label class="fl">Ответственный агент</label><select name="agentId"><option value="">— Не назначен —</option>${S.employees.filter(e => e.role === 'agent').map(e => `<option value="${e.id}" ${e.id === c.agentId ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}</select></div>
+    <div><label class="fl">Ответственный агент (ПМ / Аналитик)</label><select name="agentId"><option value="">— Не назначен —</option>${S.employees.filter(e => e.role === 'agent').map(e => `<option value="${e.id}" ${e.id === c.agentId ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}</select></div>
     <div><label class="fl">№ в системе</label><input type="text" name="extNum" value="${esc(c.extNum || '')}"></div>
     <div><label class="fl">Ссылка</label><input type="url" name="extLink" value="${esc(c.extLink || '')}"></div>
     <div><label class="fl">Дата начала</label><input type="date" name="start" value="${c.start || ''}"></div>
@@ -78,6 +80,7 @@ export function openChangeForm(S, id, preset = {}, onSave) {
         c.priorityId = +fd.get('priorityId') || null;
         c.devId = +fd.get('devId') || null;
         c.agentId = +fd.get('agentId') || null;
+        c.customerId = +fd.get('customerId') || null;
         c.extNum = fd.get('extNum');
         c.extLink = fd.get('extLink');
         c.start = fd.get('start') || '';

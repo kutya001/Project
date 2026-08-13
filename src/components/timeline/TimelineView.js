@@ -14,7 +14,7 @@ import { getCommonContextMenuItems } from '../../services/quickActions.js';
 import { toast } from '../../ui/toast.js';
 
 const PPD = { day: 44, month: 13, quarter: 4.5, year: 1.2 };
-const MAXLANE = { day: 7, month: 4, quarter: 3, year: 2 };
+const MAXLANE = { day: 15, month: 10, quarter: 8, year: 5 };
 const MODES = [['year', 'Годы'], ['quarter', 'Кварталы'], ['month', 'Месяцы'], ['day', 'Дни']];
 const TL_ANCHOR = {};
 
@@ -245,7 +245,8 @@ export function renderTimelineView(S, ent, mount, callbacks = {}) {
     const maxL = MAXLANE[mode];
     const visible = placed.filter(p => p.lane < maxL);
     const hidden = placed.filter(p => p.lane >= maxL);
-    const rowH = Math.max(1, Math.min(maxL, Math.max(1, laneEnd.length))) * 26 + 8;
+    const maxLaneIdx = placed.length ? Math.max(...placed.map(p => p.lane)) : 0;
+    const rowH = Math.max(1, Math.min(maxL, maxLaneIdx + 1)) * 26 + 8;
 
     const bars = visible.map(({ it, lane }) => {
       const sT = new Date(it.start + 'T00:00:00').getTime(), eT = new Date(it.end + 'T00:00:00').getTime();
@@ -474,13 +475,73 @@ export function renderTimelineView(S, ent, mount, callbacks = {}) {
   mount.querySelectorAll('.bar').forEach(bar => {
     const id = +bar.dataset.id;
     const triggerCtx = (clientX, clientY) => {
-      const items = getCommonContextMenuItems(S, ent, id, callbacks, reRender);
+      const menuItems = getCommonContextMenuItems(S, ent, id, callbacks, reRender);
+
+      const barItem = S[ent].find(x => x.id === id);
+      if (barItem) {
+        const groupDef = gdefs.find(g => g.match(barItem));
+        if (groupDef) {
+          const gidStr = String(groupDef.id ?? '__null');
+          const itemOrderKey = `${ent}_${groupBy}_${gidStr}`;
+          const rawTargetItems = S[ent].filter(r => groupDef.match(r) && matchSearch(S, coldefs, ent, r));
+
+          if (rawTargetItems.length > 1) {
+            S.prefs.tlItemOrder = S.prefs.tlItemOrder || {};
+            let currentOrder = S.prefs.tlItemOrder[itemOrderKey] ? [...S.prefs.tlItemOrder[itemOrderKey]] : [];
+            currentOrder = currentOrder.filter(itemId => rawTargetItems.some(it => it.id === itemId));
+            rawTargetItems.forEach(it => {
+              if (!currentOrder.includes(it.id)) currentOrder.push(it.id);
+            });
+
+            const idx = currentOrder.indexOf(id);
+
+            const reorderItems = [];
+            if (idx > 0) {
+              reorderItems.push({
+                id: 'moveUp',
+                label: 'Переместить выше ▲',
+                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>',
+                action: async () => {
+                  const temp = currentOrder[idx];
+                  currentOrder[idx] = currentOrder[idx - 1];
+                  currentOrder[idx - 1] = temp;
+                  S.prefs.tlItemOrder[itemOrderKey] = currentOrder;
+                  await savePrefs(S);
+                  toast(`«${barItem.name}» перемещена выше`, 'ok');
+                  reRender();
+                }
+              });
+            }
+            if (idx < currentOrder.length - 1) {
+              reorderItems.push({
+                id: 'moveDown',
+                label: 'Переместить ниже ▼',
+                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>',
+                action: async () => {
+                  const temp = currentOrder[idx];
+                  currentOrder[idx] = currentOrder[idx + 1];
+                  currentOrder[idx + 1] = temp;
+                  S.prefs.tlItemOrder[itemOrderKey] = currentOrder;
+                  await savePrefs(S);
+                  toast(`«${barItem.name}» перемещена ниже`, 'ok');
+                  reRender();
+                }
+              });
+            }
+
+            if (reorderItems.length) {
+              menuItems.splice(2, 0, ...reorderItems, { type: 'divider' });
+            }
+          }
+        }
+      }
+
       showContextMenu({
         preventDefault: () => {},
         stopPropagation: () => {},
         clientX,
         clientY
-      }, items);
+      }, menuItems);
     };
 
     bar.oncontextmenu = e => {

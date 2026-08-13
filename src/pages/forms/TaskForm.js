@@ -16,13 +16,14 @@ export function openTaskForm(S, id, preset = {}, onSave) {
     statusId: S.taskStatuses[0]?.id || null,
     priorityId: S.priorities[0]?.id || null,
     devId: S.employees.find(e => e.role === 'dev')?.id || null,
-    agentId: null,
+    agentId: null, customerId: null,
     extNum: '', extLink: '',
     start: '', end: '',
     agents: [], devs: []
   };
 
   const isEdit = !!t.id;
+  const custsList = S.customers || [];
   const mcheck = (role, sel) => (S.employees.filter(e => e.role === role) || []).map(e => `
     <label><input type="checkbox" name="${role}s" value="${e.id}" ${(sel || []).includes(e.id) ? 'checked' : ''}>${esc(e.name)}</label>
   `).join('') || '<div style="color:var(--mut2)">нет записи</div>';
@@ -37,15 +38,16 @@ export function openTaskForm(S, id, preset = {}, onSave) {
       </div>
     </div>
     <div class="full"><label class="fl">Название задачи</label><input type="text" name="name" value="${esc(t.name)}" required></div>
+    <div><label class="fl">Заказчик</label><select name="customerId"><option value="">— Выбрать заказчика —</option>${custsList.map(c => `<option value="${c.id}" ${c.id === t.customerId ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></div>
     <div><label class="fl">Статус</label><select name="statusId">${S.taskStatuses.map(s => `<option value="${s.id}" ${s.id === t.statusId ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></div>
     <div><label class="fl">Приоритет</label><select name="priorityId">${S.priorities.map(s => `<option value="${s.id}" ${s.id === t.priorityId ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></div>
     <div><label class="fl">Ответственный разработчик</label><select name="devId"><option value="">— Не назначен —</option>${S.employees.filter(e => e.role === 'dev').map(e => `<option value="${e.id}" ${e.id === t.devId ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}</select></div>
-    <div><label class="fl">Ответственный агент</label><select name="agentId"><option value="">— Не назначен —</option>${S.employees.filter(e => e.role === 'agent').map(e => `<option value="${e.id}" ${e.id === t.agentId ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}</select></div>
+    <div><label class="fl">Ответственный агент (ПМ / Аналитик)</label><select name="agentId"><option value="">— Не назначен —</option>${S.employees.filter(e => e.role === 'agent').map(e => `<option value="${e.id}" ${e.id === t.agentId ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}</select></div>
     <div><label class="fl">№ в смежной системе</label><input type="text" name="extNum" value="${esc(t.extNum || '')}"></div>
     <div><label class="fl">Ссылка на задачу</label><input type="url" name="extLink" value="${esc(t.extLink || '')}"></div>
     <div><label class="fl">Дата начала</label><input type="date" name="start" value="${t.start || ''}"></div>
     <div><label class="fl">Дата окончания</label><input type="date" name="end" value="${t.end || ''}"></div>
-    <div class="full"><label class="fl">Дополнительные агенты</label><div class="mcheck">${mcheck('agent', t.agents)}</div></div>
+    <div class="full"><label class="fl">Дополнительные агенты (ПМ / Аналитики)</label><div class="mcheck">${mcheck('agent', t.agents)}</div></div>
     <div class="full"><label class="fl">Участники разработки</label><div class="mcheck">${mcheck('dev', t.devs)}</div></div>
     <div class="full"><label class="fl">Описание</label><textarea name="desc">${esc(t.desc || '')}</textarea></div>
     <div class="full"><label class="fl">Примечание</label><input type="text" name="note" value="${esc(t.note || '')}"></div>
@@ -86,6 +88,7 @@ export function openTaskForm(S, id, preset = {}, onSave) {
         t.priorityId = +fd.get('priorityId') || null;
         t.devId = +fd.get('devId') || null;
         t.agentId = +fd.get('agentId') || null;
+        t.customerId = +fd.get('customerId') || null;
         t.extNum = fd.get('extNum');
         t.extLink = fd.get('extLink');
         t.start = fd.get('start') || '';

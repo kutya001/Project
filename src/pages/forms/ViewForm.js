@@ -33,6 +33,7 @@ export function openViewModal(S, ent, id, callbacks = {}, stack = []) {
   const ag = emp(S, r.agentId);
   const pj = prj(S, r.projectId);
   const tk = tsk(S, r.taskId);
+  const cs = (S.customers || []).find(c => c.id === r.customerId);
 
   // Navigation Breadcrumb HTML
   const breadcrumbHtml = `<div class="v-breadcrumb">
@@ -104,8 +105,12 @@ export function openViewModal(S, ent, id, callbacks = {}, stack = []) {
         <div class="lbl">Сроки выполнения</div>
         <div class="val mono">${r.start ? fmtD(r.start) : '—'} → ${r.end ? fmtD(r.end) : '—'}</div>
       </div>
+      ${cs ? `<div class="v-stat-card">
+        <div class="lbl">Заказчик</div>
+        <div class="val"><button class="v-step link" id="vLinkCustomer" style="font-size:13.5px">🏢 ${esc(cs.name)}</button></div>
+      </div>` : ''}
       ${dv || ag ? `<div class="v-stat-card">
-        <div class="lbl">Главные ответственные</div>
+        <div class="lbl">Ответственные</div>
         <div class="val" style="display:flex;gap:6px;flex-wrap:wrap">
           ${dv ? chipHtml('Дев: ' + dv.name, colorOf(dv)) : ''}
           ${ag ? chipHtml('Агент: ' + ag.name, colorOf(ag)) : ''}
@@ -188,6 +193,36 @@ export function openViewModal(S, ent, id, callbacks = {}, stack = []) {
       </table>
 
       <div class="v-section-title">Задачи с участием (${tks.length})</div>
+      <table class="mini-t">
+        <tbody>${tks.map(t => {
+          const tst = statFor(S, 'tasks', t.statusId);
+          return `<tr data-tid="${t.id}">
+            <td><b class="mono" style="color:var(--acc)">${esc(t.num)}</b></td>
+            <td><b>${esc(t.name)}</b></td>
+            <td>${tst ? chipHtml(tst.name, colorOf(tst)) : '—'}</td>
+            <td class="mono" style="font-size:12px">${fmtD(t.start)} → ${fmtD(t.end)}</td>
+          </tr>`;
+        }).join('') || '<tr><td colspan="4" style="color:var(--mut2);padding:12px;text-align:center">Нет привязанных задач</td></tr>'}</tbody>
+      </table>
+    </div>`;
+  } else if (cEnt === 'customers') {
+    const pjs = S.projects.filter(p => p.customerId === r.id);
+    const tks = S.tasks.filter(t => t.customerId === r.id);
+    kidsHtml = `<div>
+      <div class="v-section-title">Проекты заказчика (${pjs.length})</div>
+      <table class="mini-t" style="margin-bottom:16px">
+        <tbody>${pjs.map(p => {
+          const pst = statFor(S, 'projects', p.statusId);
+          return `<tr data-pid="${p.id}">
+            <td><b class="mono" style="color:var(--acc)">${esc(p.num)}</b></td>
+            <td><b>${esc(p.name)}</b></td>
+            <td>${pst ? chipHtml(pst.name, colorOf(pst)) : '—'}</td>
+            <td class="mono" style="font-size:12px">${fmtD(p.start)} → ${fmtD(p.end)}</td>
+          </tr>`;
+        }).join('') || '<tr><td colspan="4" style="color:var(--mut2);padding:12px;text-align:center">Нет привязанных проектов</td></tr>'}</tbody>
+      </table>
+
+      <div class="v-section-title">Задачи заказчика (${tks.length})</div>
       <table class="mini-t">
         <tbody>${tks.map(t => {
           const tst = statFor(S, 'tasks', t.statusId);
@@ -317,6 +352,8 @@ export function openViewModal(S, ent, id, callbacks = {}, stack = []) {
   const detailsHtml = `<dl class="dl" style="margin-bottom:16px">
     ${r.num ? `<dt>Номер / Код</dt><dd><b class="mono" style="font-size:14px;color:var(--acc)">${esc(r.num)}</b></dd>` : ''}
     <dt>Название</dt><dd><b style="font-size:14px;color:var(--ink)">${esc(r.name)}</b></dd>
+    ${cs ? `<dt>Заказчик</dt><dd><b>${esc(cs.name)}</b></dd>` : ''}
+    ${r.contacts ? `<dt>Контактные данные</dt><dd><b>${esc(r.contacts)}</b></dd>` : ''}
     ${r.extNum ? `<dt>№ в системе</dt><dd><span class="mono">${esc(r.extNum)}</span></dd>` : ''}
     ${r.extLink ? `<dt>Внешняя ссылка</dt><dd><a href="${esc(r.extLink)}" target="_blank" rel="noopener" style="color:var(--acc);font-weight:600">🔗 ${esc(r.extLink)}</a></dd>` : ''}
     ${r.position ? `<dt>Должность / Компания</dt><dd><b>${esc(r.position)}</b></dd>` : ''}
@@ -477,6 +514,13 @@ export function openViewModal(S, ent, id, callbacks = {}, stack = []) {
       });
 
       // Clickable Parents in stats
+      const linkCustomer = box.el.querySelector('#vLinkCustomer');
+      if (linkCustomer && cs) {
+        linkCustomer.onclick = () => {
+          box.close();
+          openViewModal(S, 'customers', cs.id, callbacks, [...stack, { ent: 'customers', id: cs.id }]);
+        };
+      }
       const linkParentPj = box.el.querySelector('#vLinkParentPj');
       if (linkParentPj && pj) {
         linkParentPj.onclick = () => {
