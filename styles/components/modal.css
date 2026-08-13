@@ -72,30 +72,6 @@
   grid-column: 1 / -1;
 }
 
-.btn-add-main {
-  position: fixed;
-  right: 24px;
-  bottom: 32px;
-  z-index: 150;
-  border-radius: 50px;
-  padding: 12px 20px;
-  font-size: 14px;
-  font-weight: 700;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-  background: var(--acc);
-  color: #fff;
-  border: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  transition: transform 0.2s, background 0.2s;
-}
-.btn-add-main:hover {
-  transform: translateY(-2px);
-  background: #3182CE;
-}
-
 .ftabs {
   display: flex;
   gap: 4px;
@@ -538,7 +514,8 @@
   }
 
   .mdl, .mdl.wide {
-    width: calc(100vw - 16px) !important;
+    width: 100% !important;
+    max-width: 100% !important;
     max-height: 94vh;
     border-radius: 12px;
   }
@@ -568,8 +545,14 @@
   }
 
   .fgrid {
-    grid-template-columns: 1fr !important;
-    gap: 12px;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px 10px;
+  }
+  .fgrid .full,
+  .fgrid textarea,
+  .fgrid .stageed,
+  .fgrid .mcheck {
+    grid-column: 1 / -1 !important;
   }
 
   .ftabs {

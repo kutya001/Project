@@ -32,12 +32,12 @@ export function renderRefsPage(S, mount, callbacks = {}) {
           Карточки
         </button>
       </div>
-      <button class="btn pri btn-add-main" id="btnAddRef">+ Добавить элемент</button>
     </div>
     <div class="refs">
       <div class="tabs">${tabs}</div>
       <div id="refPanel"></div>
-    </div>`;
+    </div>
+    <button class="btn pri btn-add-main" id="btnAddRef">+ Добавить элемент</button>`;
 
   const panelEl = mount.querySelector('#refPanel');
   const reRender = () => renderRefsPage(S, mount, callbacks);

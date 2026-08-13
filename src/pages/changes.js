@@ -19,9 +19,9 @@ export function renderChangesPage(S, mount, callbacks = {}) {
         <button data-v="kb" class="${vMode === 'kb' ? 'on' : ''}">${VIEW_ICONS.kb} Канбан</button>
         <button data-v="tl" class="${vMode === 'tl' ? 'on' : ''}">${VIEW_ICONS.tl} Гант</button>
       </div>
-      <button class="btn pri btn-add-main" id="btnAddChg">+ Зафиксировать изменение</button>
     </div>
-    <div id="cContent"></div>`;
+    <div id="cContent"></div>
+    <button class="btn pri btn-add-main" id="btnAddChg">+ Зафиксировать изменение</button>`;
 
   const cnt = mount.querySelector('#cContent');
   const reRender = () => renderChangesPage(S, mount, callbacks);

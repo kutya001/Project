@@ -19,9 +19,9 @@ export function renderTasksPage(S, mount, callbacks = {}) {
         <button data-v="kb" class="${vMode === 'kb' ? 'on' : ''}">${VIEW_ICONS.kb} Канбан</button>
         <button data-v="tl" class="${vMode === 'tl' ? 'on' : ''}">${VIEW_ICONS.tl} Гант</button>
       </div>
-      <button class="btn pri btn-add-main" id="btnAddTsk">+ Создать задачу</button>
     </div>
-    <div id="tContent"></div>`;
+    <div id="tContent"></div>
+    <button class="btn pri btn-add-main" id="btnAddTsk">+ Создать задачу</button>`;
 
   const cnt = mount.querySelector('#tContent');
   const reRender = () => renderTasksPage(S, mount, callbacks);

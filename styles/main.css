@@ -131,3 +131,64 @@ label.fl {
 @keyframes tin {
   from { opacity: 0; transform: translateX(30px); }
 }
+
+/* Floating Action Button for main entities */
+button.btn.btn-add-main,
+.phead > button.btn.btn-add-main {
+  position: fixed !important;
+  right: 24px !important;
+  bottom: 32px !important;
+  z-index: 150 !important;
+  border-radius: 50px !important;
+  padding: 12px 20px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
+  background: var(--acc) !important;
+  color: #fff !important;
+  border: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  cursor: pointer !important;
+  transition: transform 0.2s, background 0.2s !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+button.btn.btn-add-main:hover,
+.phead > button.btn.btn-add-main:hover {
+  transform: translateY(-2px) !important;
+  background: #3182CE !important;
+}
+
+/* Mobile specific styling for the FAB */
+@media (max-width: 768px) {
+  button.btn.btn-add-main,
+  .phead > button.btn.btn-add-main {
+    right: 20px !important;
+    bottom: 80px !important; /* Above bottom nav which is ~56px */
+    width: 56px !important;
+    height: 56px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    font-size: 0 !important; /* Hide original text */
+    box-shadow: 0 4px 12px rgba(11, 114, 133, 0.4) !important;
+    position: fixed !important;
+  }
+  
+  button.btn.btn-add-main::after,
+  .phead > button.btn.btn-add-main::after {
+    content: '+';
+    font-size: 36px !important;
+    font-weight: 300 !important;
+    line-height: 1 !important;
+    color: #fff !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+  }
+}

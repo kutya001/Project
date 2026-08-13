@@ -286,7 +286,7 @@ table.tbl {
     -webkit-overflow-scrolling: touch;
   }
   table.tbl {
-    min-width: 650px;
+    min-width: 100%;
   }
   .subpad {
     padding: 8px 10px 10px 16px;
