@@ -12,6 +12,7 @@ const S = {
   projectStatuses: [],
   stages: [],
   history: [],
+  kanbanBoards: [],
   prefs: {
     tables: {},
     cards: {},

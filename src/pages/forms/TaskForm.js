@@ -7,6 +7,7 @@ import { afterChange, setDbBeacon } from '../../utils/logger.js';
 import { toast } from '../../ui/toast.js';
 import { openViewModal } from './ViewForm.js';
 import { openProjectForm } from './ProjectForm.js';
+import { renderColorOptions, setupColorSelects } from '../../utils/colorSelect.js';
 
 export function openTaskForm(S, id, preset = {}, onSave) {
   const t = S.tasks.find(x => x.id === id) || {
@@ -24,13 +25,16 @@ export function openTaskForm(S, id, preset = {}, onSave) {
 
   const isEdit = !!t.id;
   const custsList = S.customers || [];
+  const devsList = S.employees.filter(e => e.role === 'dev') || [];
+  const agentsList = S.employees.filter(e => e.role === 'agent') || [];
+
   const mcheck = (role, sel) => (S.employees.filter(e => e.role === role) || []).map(e => `
     <label><input type="checkbox" name="${role}s" value="${e.id}" ${(sel || []).includes(e.id) ? 'checked' : ''}>${esc(e.name)}</label>
   `).join('') || '<div style="color:var(--mut2)">нет записи</div>';
 
   const body = `<form id="tf" class="fgrid">
     <div><label class="fl">Код / Номер</label><input type="text" name="num" value="${esc(t.num)}" required></div>
-    <div>
+    <div class="full">
       <label class="fl">Проект</label>
       <div style="display:flex;gap:6px;align-items:center">
         <select name="projectId" style="flex:1">${S.projects.map(p => `<option value="${p.id}" ${p.id === t.projectId ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}</select>
@@ -39,10 +43,10 @@ export function openTaskForm(S, id, preset = {}, onSave) {
     </div>
     <div class="full"><label class="fl">Название задачи</label><input type="text" name="name" value="${esc(t.name)}" required></div>
     <div><label class="fl">Заказчик</label><select name="customerId"><option value="">— Выбрать заказчика —</option>${custsList.map(c => `<option value="${c.id}" ${c.id === t.customerId ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></div>
-    <div><label class="fl">Статус</label><select name="statusId">${S.taskStatuses.map(s => `<option value="${s.id}" ${s.id === t.statusId ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></div>
-    <div><label class="fl">Приоритет</label><select name="priorityId">${S.priorities.map(s => `<option value="${s.id}" ${s.id === t.priorityId ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></div>
-    <div><label class="fl">Ответственный разработчик</label><select name="devId"><option value="">— Не назначен —</option>${S.employees.filter(e => e.role === 'dev').map(e => `<option value="${e.id}" ${e.id === t.devId ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}</select></div>
-    <div><label class="fl">Ответственный агент (ПМ / Аналитик)</label><select name="agentId"><option value="">— Не назначен —</option>${S.employees.filter(e => e.role === 'agent').map(e => `<option value="${e.id}" ${e.id === t.agentId ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}</select></div>
+    <div><label class="fl">Статус</label><select name="statusId">${renderColorOptions(S.taskStatuses, t.statusId)}</select></div>
+    <div><label class="fl">Приоритет</label><select name="priorityId">${renderColorOptions(S.priorities, t.priorityId)}</select></div>
+    <div><label class="fl">Ответственный разработчик</label><select name="devId">${renderColorOptions(devsList, t.devId, '— Не назначен —')}</select></div>
+    <div><label class="fl">Ответственный агент (ПМ / Аналитик)</label><select name="agentId">${renderColorOptions(agentsList, t.agentId, '— Не назначен —')}</select></div>
     <div><label class="fl">№ в смежной системе</label><input type="text" name="extNum" value="${esc(t.extNum || '')}"></div>
     <div><label class="fl">Ссылка на задачу</label><input type="url" name="extLink" value="${esc(t.extLink || '')}"></div>
     <div><label class="fl">Дата начала</label><input type="date" name="start" value="${t.start || ''}"></div>
@@ -60,6 +64,7 @@ export function openTaskForm(S, id, preset = {}, onSave) {
     body,
     foot: `<button class="btn" data-x>Отмена</button><button class="btn pri" data-save>Сохранить</button>`,
     mount(box) {
+      setupColorSelects(box.el);
       const btnPrevPj = box.el.querySelector('#btnPreviewProject');
       if (btnPrevPj) {
         btnPrevPj.onclick = () => {

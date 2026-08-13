@@ -32,7 +32,7 @@ export function renderRefsPage(S, mount, callbacks = {}) {
           Карточки
         </button>
       </div>
-      <button class="btn pri" id="btnAddRef">+ Добавить элемент</button>
+      <button class="btn pri btn-add-main" id="btnAddRef">+ Добавить элемент</button>
     </div>
     <div class="refs">
       <div class="tabs">${tabs}</div>

@@ -7,6 +7,7 @@ import { toast } from '../ui/toast.js';
 import { esc } from '../utils/dom.js';
 import { openTaskForm } from '../pages/forms/TaskForm.js';
 import { openChangeForm } from '../pages/forms/ChangeForm.js';
+import { renderColorOptions, setupColorSelects } from '../utils/colorSelect.js';
 
 export async function duplicateRecord(S, ent, id, autoSave) {
   const item = (S[ent] || []).find(x => x.id === id);
@@ -66,11 +67,11 @@ export function openQuickChangeModal(S, ent, id, callbacks = {}) {
   if (isMain) {
     const hasStage = ent === 'projects';
     body += `
-      <div><label class="fl">Статус</label><select name="statusId">${statuses.map(s => `<option value="${s.id}" ${s.id === r.statusId ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></div>
-      <div><label class="fl">Приоритет</label><select name="priorityId">${S.priorities.map(p => `<option value="${p.id}" ${p.id === r.priorityId ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}</select></div>
-      ${hasStage ? `<div><label class="fl">Текущий этап</label><select name="stageId"><option value="">— Не выбран —</option>${S.stages.map(s => `<option value="${s.id}" ${s.id === r.stageId ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></div>` : ''}
-      <div><label class="fl">Ответственный разработчик</label><select name="devId"><option value="">— Не назначен —</option>${devsList.map(e => `<option value="${e.id}" ${e.id === r.devId ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}</select></div>
-      <div><label class="fl">Ответственный агент</label><select name="agentId"><option value="">— Не назначен —</option>${agentsList.map(e => `<option value="${e.id}" ${e.id === r.agentId ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}</select></div>
+      <div><label class="fl">Статус</label><select name="statusId">${renderColorOptions(statuses, r.statusId)}</select></div>
+      <div><label class="fl">Приоритет</label><select name="priorityId">${renderColorOptions(S.priorities, r.priorityId)}</select></div>
+      ${hasStage ? `<div><label class="fl">Текущий этап</label><select name="stageId">${renderColorOptions(S.stages, r.stageId, '— Не выбран —')}</select></div>` : ''}
+      <div><label class="fl">Ответственный разработчик</label><select name="devId">${renderColorOptions(devsList, r.devId, '— Не назначен —')}</select></div>
+      <div><label class="fl">Ответственный агент</label><select name="agentId">${renderColorOptions(agentsList, r.agentId, '— Не назначен —')}</select></div>
       ${hasStage ? `<div class="full"><label class="fl">Прогресс по этапам (%)</label>
         <div class="stageed">${S.stages.map(st => {
           const val = r.stageProgress ? (r.stageProgress[st.id] || 0) : 0;
@@ -107,6 +108,7 @@ export function openQuickChangeModal(S, ent, id, callbacks = {}) {
     body,
     foot: `<button class="btn" data-x>Отмена</button><button class="btn pri" data-save>Сохранить</button>`,
     mount(box) {
+      setupColorSelects(box.el);
       const stageSel = box.el.querySelector('select[name="stageId"]');
       box.el.querySelectorAll('input[data-sp]').forEach(rng => rng.oninput = () => {
         const pv = box.el.querySelector('#qspv-' + rng.dataset.sp);

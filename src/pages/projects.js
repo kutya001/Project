@@ -20,7 +20,7 @@ export function renderProjectsPage(S, mount, callbacks = {}) {
         <button data-v="kb" class="${vMode === 'kb' ? 'on' : ''}">${VIEW_ICONS.kb} Канбан</button>
         <button data-v="tl" class="${vMode === 'tl' ? 'on' : ''}">${VIEW_ICONS.tl} Гант</button>
       </div>
-      <button class="btn pri" id="btnAddPrj">+ Создать проект</button>
+      <button class="btn pri btn-add-main" id="btnAddPrj">+ Создать проект</button>
     </div>
     <div id="pContent"></div>`;
 

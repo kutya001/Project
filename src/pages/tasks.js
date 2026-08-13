@@ -19,7 +19,7 @@ export function renderTasksPage(S, mount, callbacks = {}) {
         <button data-v="kb" class="${vMode === 'kb' ? 'on' : ''}">${VIEW_ICONS.kb} Канбан</button>
         <button data-v="tl" class="${vMode === 'tl' ? 'on' : ''}">${VIEW_ICONS.tl} Гант</button>
       </div>
-      <button class="btn pri" id="btnAddTsk">+ Создать задачу</button>
+      <button class="btn pri btn-add-main" id="btnAddTsk">+ Создать задачу</button>
     </div>
     <div id="tContent"></div>`;
 

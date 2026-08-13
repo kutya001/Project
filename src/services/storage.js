@@ -21,6 +21,7 @@ export function buildSnapshot(S) {
       projectStatuses: S.projectStatuses,
       stages: S.stages,
       stageHistory: S.history,
+      kanbanBoards: S.kanbanBoards || [],
       prefs: S.prefs,
       counters: S.counters
     }
@@ -74,13 +75,15 @@ export async function doImport(S, file, onComplete) {
 
     if (!data) return toast('Структура данных не поддерживается', 'err');
 
-    for (const t of ['projects', 'tasks', 'changes', 'employees', 'priorities', 'taskStatuses', 'projectStatuses', 'stages', 'stageHistory']) {
-      await db[t].clear();
+    const tablesToSync = ['projects', 'tasks', 'changes', 'employees', 'priorities', 'taskStatuses', 'projectStatuses', 'stages', 'stageHistory', 'kanbanBoards'];
+
+    for (const t of tablesToSync) {
+      if (db[t]) await db[t].clear();
     }
 
-    for (const k of ['projects', 'tasks', 'changes', 'employees', 'priorities', 'taskStatuses', 'projectStatuses', 'stages', 'stageHistory']) {
+    for (const k of tablesToSync) {
       const arr = Array.isArray(data[k]) ? data[k].filter(x => x && typeof x === 'object') : [];
-      if (arr.length) await db[k].bulkAdd(arr);
+      if (arr.length && db[k]) await db[k].bulkAdd(arr);
     }
 
     if (data.prefs && typeof data.prefs === 'object') S.prefs = Object.assign(S.prefs, data.prefs);

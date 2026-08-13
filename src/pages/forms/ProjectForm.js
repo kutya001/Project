@@ -5,6 +5,7 @@ import { modal } from '../../ui/modal.js';
 import { db, refreshAll } from '../../core/db.js';
 import { afterChange, setDbBeacon } from '../../utils/logger.js';
 import { toast } from '../../ui/toast.js';
+import { renderColorOptions, setupColorSelects } from '../../utils/colorSelect.js';
 
 export function openProjectForm(S, id, onSave) {
   const p = S.projects.find(x => x.id === id) || {
@@ -29,13 +30,13 @@ export function openProjectForm(S, id, onSave) {
 
   const body = `<form id="pf" class="fgrid">
     <div><label class="fl">Код / Номер</label><input type="text" name="num" value="${esc(p.num)}" required></div>
-    <div><label class="fl">Статус</label><select name="statusId">${S.projectStatuses.map(s => `<option value="${s.id}" ${s.id === p.statusId ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></div>
+    <div><label class="fl">Статус</label><select name="statusId">${renderColorOptions(S.projectStatuses, p.statusId)}</select></div>
     <div class="full"><label class="fl">Название проекта</label><input type="text" name="name" value="${esc(p.name)}" required></div>
     <div><label class="fl">Заказчик</label><select name="customerId"><option value="">— Выбрать заказчика —</option>${custsList.map(c => `<option value="${c.id}" ${c.id === p.customerId ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></div>
-    <div><label class="fl">Приоритет</label><select name="priorityId">${S.priorities.map(s => `<option value="${s.id}" ${s.id === p.priorityId ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></div>
-    <div><label class="fl">Текущий этап</label><select name="stageId"><option value="">— Не выбран —</option>${S.stages.map(s => `<option value="${s.id}" ${s.id === p.stageId ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></div>
-    <div><label class="fl">Разработчик (гл.)</label><select name="devId"><option value="">— Не назначен —</option>${devsList.map(e => `<option value="${e.id}" ${e.id === p.devId ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}</select></div>
-    <div class="full"><label class="fl">Ответственный агент (ПМ / Аналитик)</label><select name="agentId"><option value="">— Не назначен —</option>${agentsList.map(e => `<option value="${e.id}" ${e.id === p.agentId ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}</select></div>
+    <div><label class="fl">Приоритет</label><select name="priorityId">${renderColorOptions(S.priorities, p.priorityId)}</select></div>
+    <div><label class="fl">Текущий этап</label><select name="stageId">${renderColorOptions(S.stages, p.stageId, '— Не выбран —')}</select></div>
+    <div><label class="fl">Разработчик (гл.)</label><select name="devId">${renderColorOptions(devsList, p.devId, '— Не назначен —')}</select></div>
+    <div class="full"><label class="fl">Ответственный агент (ПМ / Аналитик)</label><select name="agentId">${renderColorOptions(agentsList, p.agentId, '— Не назначен —')}</select></div>
     <div><label class="fl">Дата начала</label><input type="date" name="start" value="${p.start || ''}"></div>
     <div><label class="fl">Дата окончания</label><input type="date" name="end" value="${p.end || ''}"></div>
     <div class="full"><label class="fl">Агенты проекта (ПМ / Аналитики)</label><div class="mcheck">${mcheck('agent', p.agents)}</div></div>
@@ -57,6 +58,7 @@ export function openProjectForm(S, id, onSave) {
     body,
     foot: `<button class="btn" data-x>Отмена</button><button class="btn pri" data-save>Сохранить</button>`,
     mount(box) {
+      setupColorSelects(box.el);
       const stageSel = box.el.querySelector('select[name="stageId"]');
       box.el.querySelectorAll('input[data-sp]').forEach(r => r.oninput = () => {
         const pv = box.el.querySelector('#spv-' + r.dataset.sp);

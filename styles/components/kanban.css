@@ -8,6 +8,45 @@
   align-items: stretch;
 }
 
+.kb-tabs {
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+  background: #EAECE3;
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+
+.kb-tab-btn {
+  background: transparent;
+  border: none;
+  padding: 5px 11px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all .15s ease;
+  white-space: nowrap;
+}
+
+.kb-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.kb-tab-btn.on {
+  background: #fff;
+  color: var(--acc);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  font-weight: 700;
+}
+
+.kb-tab-btn.custom-tab {
+  border: 1px dashed rgba(0, 0, 0, 0.15);
+}
+
 .kb-col {
   flex: 0 0 292px;
   display: flex;
@@ -60,6 +99,13 @@
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 1px 8px;
+}
+
+.kb-h .n.wip-exceeded {
+  background: #FED7D7 !important;
+  color: #C53030 !important;
+  border-color: #FEB2B2 !important;
+  font-weight: 700;
 }
 
 .col-sort-btn {

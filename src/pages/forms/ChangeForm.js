@@ -7,6 +7,7 @@ import { afterChange, setDbBeacon } from '../../utils/logger.js';
 import { toast } from '../../ui/toast.js';
 import { openViewModal } from './ViewForm.js';
 import { openTaskForm } from './TaskForm.js';
+import { renderColorOptions, setupColorSelects } from '../../utils/colorSelect.js';
 
 export function openChangeForm(S, id, preset = {}, onSave) {
   const c = S.changes.find(x => x.id === id) || {
@@ -22,9 +23,12 @@ export function openChangeForm(S, id, preset = {}, onSave) {
 
   const isEdit = !!c.id;
   const custsList = S.customers || [];
+  const devsList = S.employees.filter(e => e.role === 'dev') || [];
+  const agentsList = S.employees.filter(e => e.role === 'agent') || [];
+
   const body = `<form id="cf" class="fgrid">
     <div><label class="fl">Код / Номер</label><input type="text" name="num" value="${esc(c.num)}" required></div>
-    <div>
+    <div class="full">
       <label class="fl">Родительская задача</label>
       <div style="display:flex;gap:6px;align-items:center">
         <select name="taskId" style="flex:1">${S.tasks.map(t => `<option value="${t.id}" ${t.id === c.taskId ? 'selected' : ''}>${esc(t.name)}</option>`).join('')}</select>
@@ -33,10 +37,10 @@ export function openChangeForm(S, id, preset = {}, onSave) {
     </div>
     <div class="full"><label class="fl">Название изменения</label><input type="text" name="name" value="${esc(c.name)}" required></div>
     <div><label class="fl">Заказчик</label><select name="customerId"><option value="">— Выбрать заказчика —</option>${custsList.map(cust => `<option value="${cust.id}" ${cust.id === c.customerId ? 'selected' : ''}>${esc(cust.name)}</option>`).join('')}</select></div>
-    <div><label class="fl">Статус</label><select name="statusId">${S.taskStatuses.map(s => `<option value="${s.id}" ${s.id === c.statusId ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></div>
-    <div><label class="fl">Приоритет</label><select name="priorityId">${S.priorities.map(s => `<option value="${s.id}" ${s.id === c.priorityId ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></div>
-    <div><label class="fl">Ответственный разработчик</label><select name="devId"><option value="">— Не назначен —</option>${S.employees.filter(e => e.role === 'dev').map(e => `<option value="${e.id}" ${e.id === c.devId ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}</select></div>
-    <div><label class="fl">Ответственный агент (ПМ / Аналитик)</label><select name="agentId"><option value="">— Не назначен —</option>${S.employees.filter(e => e.role === 'agent').map(e => `<option value="${e.id}" ${e.id === c.agentId ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}</select></div>
+    <div><label class="fl">Статус</label><select name="statusId">${renderColorOptions(S.taskStatuses, c.statusId)}</select></div>
+    <div><label class="fl">Приоритет</label><select name="priorityId">${renderColorOptions(S.priorities, c.priorityId)}</select></div>
+    <div><label class="fl">Ответственный разработчик</label><select name="devId">${renderColorOptions(devsList, c.devId, '— Не назначен —')}</select></div>
+    <div><label class="fl">Ответственный агент (ПМ / Аналитик)</label><select name="agentId">${renderColorOptions(agentsList, c.agentId, '— Не назначен —')}</select></div>
     <div><label class="fl">№ в системе</label><input type="text" name="extNum" value="${esc(c.extNum || '')}"></div>
     <div><label class="fl">Ссылка</label><input type="url" name="extLink" value="${esc(c.extLink || '')}"></div>
     <div><label class="fl">Дата начала</label><input type="date" name="start" value="${c.start || ''}"></div>
@@ -52,6 +56,7 @@ export function openChangeForm(S, id, preset = {}, onSave) {
     body,
     foot: `<button class="btn" data-x>Отмена</button><button class="btn pri" data-save>Сохранить</button>`,
     mount(box) {
+      setupColorSelects(box.el);
       const btnPrevTk = box.el.querySelector('#btnPreviewTask');
       if (btnPrevTk) {
         btnPrevTk.onclick = () => {
