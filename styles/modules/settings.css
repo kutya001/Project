@@ -1,0 +1,42 @@
+/* Module: Settings */
+.setgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+}
+
+.setcard {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  padding: 16px;
+}
+
+.setcard h3 {
+  font-size: 13px;
+  font-family: 'Unbounded';
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.setcard .cb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.setcard .cb input {
+  accent-color: var(--acc);
+}
+
+.linklike {
+  color: var(--acc);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 600;
+}
