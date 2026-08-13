@@ -81,10 +81,18 @@
 
 .seg {
   display: inline-flex;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
   background: #E6E8DF;
   border-radius: 9px;
   padding: 3px;
   gap: 2px;
+}
+
+.seg::-webkit-scrollbar {
+  display: none;
 }
 
 .seg button {
@@ -100,6 +108,8 @@
   display: flex;
   gap: 7px;
   align-items: center;
+  white-space: nowrap;
+  flex: none;
 }
 
 .seg button:hover {

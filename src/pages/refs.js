@@ -101,7 +101,7 @@ function renderCardsView(S, curTab, mount, refCallbacks, reRender) {
 
   if (!items.length) {
     mount.innerHTML = `<div style="text-align:center;padding:40px 20px;background:#fff;border:1px solid var(--line);border-radius:12px;color:var(--mut)">
-      <div style="font-size:32px;margin-bottom:8px">📭</div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:36px;height:36px;color:var(--mut2);margin-bottom:8px"><path d="M22 12h-6l-2 3h-4l-2-3H2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-7z"/><path d="M5.45 5.11L2 12v0h20v0l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
       <div>Справочник пуст</div>
     </div>`;
     return;
@@ -119,6 +119,10 @@ function renderCardsView(S, curTab, mount, refCallbacks, reRender) {
     pm: '#D69E2E'
   };
 
+  const iconPrj = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;display:inline-block;vertical-align:-2px"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
+  const iconTsk = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;display:inline-block;vertical-align:-2px"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`;
+  const iconChg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;display:inline-block;vertical-align:-2px"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`;
+
   const cardsHtml = items.map(item => {
     const col = colorOf(item);
     let detailsHtml = '';
@@ -135,8 +139,8 @@ function renderCardsView(S, curTab, mount, refCallbacks, reRender) {
           ${item.position ? `<span style="color:var(--mut)">${esc(item.position)}</span>` : ''}
         </div>
         <div style="display:flex;gap:12px;font-size:11.5px;color:var(--mut);margin-top:2px">
-          <span>📁 Проектов: <b>${pCount}</b></span>
-          <span>✅ Задач: <b>${tCount}</b></span>
+          <span>${iconPrj} Проектов: <b>${pCount}</b></span>
+          <span>${iconTsk} Задач: <b>${tCount}</b></span>
         </div>
       `;
     } else if (curTab === 'priorities') {
@@ -147,26 +151,26 @@ function renderCardsView(S, curTab, mount, refCallbacks, reRender) {
       detailsHtml = `
         <div>Вес приоритета: <b>${item.weight ?? 0}</b></div>
         <div style="display:flex;gap:12px;font-size:11.5px;color:var(--mut);margin-top:2px">
-          <span>📁 Проектов: <b>${pCount}</b></span>
-          <span>✅ Задач: <b>${tCount}</b></span>
-          <span>⚡ Изменений: <b>${cCount}</b></span>
+          <span>${iconPrj} Проектов: <b>${pCount}</b></span>
+          <span>${iconTsk} Задач: <b>${tCount}</b></span>
+          <span>${iconChg} Изменений: <b>${cCount}</b></span>
         </div>
       `;
     } else if (curTab === 'projectStatuses') {
       const pCount = S.projects.filter(p => p.statusId === item.id).length;
-      detailsHtml = `<div>Проектов в этом статусе: <b>${pCount}</b></div>`;
+      detailsHtml = `<div>${iconPrj} Проектов в статусе: <b>${pCount}</b></div>`;
     } else if (curTab === 'taskStatuses') {
       const tCount = S.tasks.filter(t => t.statusId === item.id).length;
       const cCount = S.changes.filter(c => c.statusId === item.id).length;
       detailsHtml = `
         <div style="display:flex;gap:12px;font-size:11.5px;color:var(--mut)">
-          <span>✅ Задач: <b>${tCount}</b></span>
-          <span>⚡ Изменений: <b>${cCount}</b></span>
+          <span>${iconTsk} Задач: <b>${tCount}</b></span>
+          <span>${iconChg} Изменений: <b>${cCount}</b></span>
         </div>
       `;
     } else if (curTab === 'stages') {
       const pCount = S.projects.filter(p => p.stageId === item.id).length;
-      detailsHtml = `<div>Проектов на этом этапе: <b>${pCount}</b></div>`;
+      detailsHtml = `<div>${iconPrj} Проектов на этапе: <b>${pCount}</b></div>`;
     }
 
     return `
@@ -181,10 +185,22 @@ function renderCardsView(S, curTab, mount, refCallbacks, reRender) {
           ${detailsHtml}
         </div>
         <div class="ref-card-foot">
-          <button class="btn sm ghost" data-act="view">👁️ Просмотр</button>
-          <button class="btn sm ghost" data-act="quick">⚡ Параметры</button>
-          <button class="btn sm ghost" data-act="edit">✏️ Изменить</button>
-          <button class="btn sm ghost" data-act="del" style="color:var(--red)">🗑️ Удалить</button>
+          <button class="btn sm ghost" data-act="view" style="display:inline-flex;align-items:center;gap:4px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Просмотр
+          </button>
+          <button class="btn sm ghost" data-act="quick" style="display:inline-flex;align-items:center;gap:4px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+            Параметры
+          </button>
+          <button class="btn sm ghost" data-act="edit" style="display:inline-flex;align-items:center;gap:4px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Изменить
+          </button>
+          <button class="btn sm ghost" data-act="del" style="color:var(--red);display:inline-flex;align-items:center;gap:4px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Удалить
+          </button>
         </div>
       </div>
     `;
